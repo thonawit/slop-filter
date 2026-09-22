@@ -183,6 +183,20 @@ export function decide(
     }
   }
 
+  // Degraded mode: if the holistic Choice is missing, the battery is deciding alone —
+  // and the battery is the weaker judge. Measured: with no holistic, LinkedIn's
+  // `no_substance` at 1.00 clears the hide bar by itself, an implicit hard rule that
+  // bypasses the explicit hardSignals list. A missing answer means something went wrong
+  // with the request, so the most a partial picture may do is collapse, which is one
+  // click to recover.
+  if (slopScore >= policy.hideAt && raw.holistic === null) {
+    return {
+      ...base,
+      verdict: "collapse",
+      reason: `slop ${slopScore.toFixed(2)} ≥ ${policy.hideAt} but no holistic answer; collapsing rather than hiding`,
+    };
+  }
+
   if (slopScore >= policy.hideAt) {
     return {
       ...base,

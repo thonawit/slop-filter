@@ -203,6 +203,28 @@ describe("decide", () => {
     assert.equal(d.verdict, "hide");
   });
 
+  test("REGRESSION: a missing holistic answer degrades to collapse, never hide", () => {
+    // With no holistic the battery decides alone, and it is the weaker judge. Measured:
+    // LinkedIn's `no_substance` at 1.00 cleared the hide bar by itself — an implicit hard
+    // rule bypassing the explicit hardSignals list. A missing answer means the request
+    // went wrong, so a partial picture may collapse at most.
+    const d = decide(
+      raw("linkedin", { signals: { no_substance: 1.0 }, substance: 0 }),
+      "ordinary text",
+      "linkedin",
+      "balanced",
+      true,
+    );
+    assert.notEqual(d.verdict, "hide");
+    assert.match(d.reason, /no holistic answer/);
+  });
+
+  test("a hard signal still hides without a holistic", () => {
+    // The explicit rule is unaffected — it runs before the degraded-mode guard.
+    const d = decide(raw("x", { signals: { engagement_bait: 0.96 } }), "t", "x", "balanced", true);
+    assert.equal(d.verdict, "hide");
+  });
+
   test("interests never rescue a hidden post", () => {
     const d = decide(
       raw("x", { holistic: 1.0, substance: 0, interests: [0.99] }, ["robots"]),

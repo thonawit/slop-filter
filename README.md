@@ -219,6 +219,9 @@ Worth knowing before you rely on it:
   [Adversarial testing](#adversarial-testing).
 - **Poetry reads as "broetry."** Short-line verse trips the `staccato` feature. The weight
   is capped so it cannot hide a post alone, and this is accepted rather than fixed.
+- **A partial API response degrades to collapse, not hide.** If the holistic answer is
+  missing, the battery is deciding alone and it is the weaker judge, so nothing is hidden
+  outright until the full picture comes back.
 
 ## Layout
 

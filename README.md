@@ -168,13 +168,26 @@ on `jev-1.13.0`:
 The reverse-injection case is the one that matters: a false hide is invisible to you, so
 text that could push good posts into the hidden pile is the expensive failure.
 
-**Known limitation — irony.** A self-deprecating joke that quotes a platitude
-(`adv_ironic_platitude`) is the one case the harness reports red on purpose. Teaching
-`empty_wisdom` that mocking a maxim is not asserting one dropped that signal 0.56 → 0.13,
-but the holistic still reads ~0.69 and leads at 0.6 weight, so the composite lands within a
-hundredth of the collapse bar. The battery cannot rescue it by design. It collapses rather
-than hides, so it is one click to recover — but it is a real weakness and it is left
-visible rather than relabelled green.
+**Irony.** Jokes that quote a cliché in order to mock it used to be suppressed. The cause
+turned out not to be the irony at all: the request was carrying the user's interests and
+excluded topics in the shared `state`, where no question referenced them. That redundant
+material moved the holistic verdict by **up to +0.30 on borderline posts, always toward
+slop** — the documented "large state full of irrelevant detail" failure mode. Removing it
+(each topic question already carries its own topic in `instructions`) fixed the class:
+
+| | before | after |
+|---|---|---|
+| self-deprecating joke | 0.72 → collapse | **0.48 → show** |
+| "unpopular opinion" parody | 0.37 | **0.35** |
+| mock 5am routine | — | 0.11 |
+| sincere platitude (control) | 1.00 | **1.00** |
+| sincere 5am routine (control) | — | **0.97** |
+
+Irony cases are kept in the sample sets **paired with a sincere control of the same
+shape**, so a future change that rescues irony by blunting the detector shows up
+immediately. One case still fails at `balanced`: `iro_humbled_joke` is formatted exactly
+like a humble-brag with the irony carried entirely by the content, and it collapses. It is
+left red rather than relabelled.
 
 ### Live verification
 

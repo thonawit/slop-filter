@@ -185,5 +185,23 @@
     "expect": "hide",
     "note": "Non-English slop. The docs report a Spanish `state` costs 3-6pp accuracy; on this unambiguous case it scored 1.00.",
     "text": "La mayoría nunca tendrá éxito. No por falta de talento.\n\nSino porque se rinden.\n\nLa constancia siempre le gana al talento.\n\nPiénsalo."
+  },
+  {
+    "id": "iro_unpopular_meta",
+    "expect": "show",
+    "note": "IRONY CLASS. Paired with a sincere control of the same shape so a future tweak that rescues irony by blunting the detector shows up immediately. Mocks the 'unpopular opinion' opener; pairs with sin_unpopular_control.",
+    "text": "unpopular opinion: posts that begin with \"unpopular opinion\" have never once contained an unpopular opinion"
+  },
+  {
+    "id": "iro_fake_routine",
+    "expect": "show",
+    "note": "IRONY CLASS. Paired with a sincere control of the same shape so a future tweak that rescues irony by blunting the detector shows up immediately. Parodies the 5am-routine post; pairs with sin_routine_control.",
+    "text": "my 5am morning routine: wake at 5am (did not), cold plunge (absolutely not), read 50 pages (scrolled this app), journal (this is the journal)"
+  },
+  {
+    "id": "sin_unpopular_control",
+    "expect": "hide",
+    "note": "SINCERE CONTROL for iro_unpopular_meta. Same opener, meant straight.",
+    "text": "Unpopular opinion: university is a scam and everyone involved knows it. They just can't say it out loud."
   }
 ]

@@ -1,9 +1,10 @@
 [
   {
     "id": "reference_jev_post",
-    "expect": "show",
+    "expect": "highlight",
     "author_headline": "Founder | Make Automations",
-    "text": "LinkedIn is so much better with Jev\nOver the past few years, I would say that LinkedIn has become and absolute dumpster fire for AI content, it just showcases the bad side of AI to potential clients which makes them instantly sceptic.\nAnyway...\nI decided enough was enough and spent a few minutes creating my own slop filter plugin that uses Jev to instantly classify, lazy slop posts, but also what I might be interested in. It's still early days but I will be adding a feature to exclude certain topics that I am not interested in, for example AI and automation hate... Grinds my gears no end."
+    "text": "LinkedIn is so much better with Jev\nOver the past few years, I would say that LinkedIn has become and absolute dumpster fire for AI content, it just showcases the bad side of AI to potential clients which makes them instantly sceptic.\nAnyway...\nI decided enough was enough and spent a few minutes creating my own slop filter plugin that uses Jev to instantly classify, lazy slop posts, but also what I might be interested in. It's still early days but I will be adding a feature to exclude certain topics that I am not interested in, for example AI and automation hate... Grinds my gears no end.",
+    "note": "Expects highlight: the post is about building a filter with Jev, which matches the configured interest 'building products with small AI decision models'. Labelled 'show' until 2026-09-22, when removing redundant state from the request sharpened the interest question enough to fire on it."
   },
   {
     "id": "broetry_platitudes",
@@ -106,5 +107,23 @@
     "expect": "highlight",
     "note": "BOUNDARY: a real measured result followed by one motivational line. The closer must not sink the post. Expects highlight: about small local models, a configured interest.",
     "text": "Swapped our reranker for a 0.6B local model on the eval set: p95 went 340ms to 41ms and recall@5 dropped 2 points. Worth it for us. Config is in the repo.\n\nSmall wins compound. Keep shipping."
+  },
+  {
+    "id": "iro_hustle_mock",
+    "expect": "show",
+    "note": "IRONY CLASS. Paired with a sincere control of the same shape so a future tweak that rescues irony by blunting the detector shows up immediately. Quotes hustle slogans then undercuts them.",
+    "text": "Rise and grind. Hustle harder. No days off.\n\nWriting this from bed at 11pm eating cereal for dinner because I forgot to buy food again."
+  },
+  {
+    "id": "iro_humbled_joke",
+    "expect": "show",
+    "note": "IRONY CLASS. Paired with a sincere control of the same shape so a future tweak that rescues irony by blunting the detector shows up immediately. KNOWN HARD CASE: collapses at ~0.48 against a 0.42 bar. Formatted exactly like a humble-brag with the irony carried entirely by the content. Genuinely ambiguous on a skim; left as the one irony case the system still gets wrong.",
+    "text": "Humbled and grateful to announce that I have been rejected by 41 companies this quarter. Truly the journey is the destination. Open to work."
+  },
+  {
+    "id": "sin_routine_control",
+    "expect": "hide",
+    "note": "SINCERE CONTROL for iro_fake_routine. Same shape, meant straight.",
+    "text": "My 5am morning routine changed my life:\n\n☀️ Wake at 5am\n🧊 Cold plunge\n📚 Read 50 pages\n✍️ Journal\n\nDiscipline is choosing what you want most over what you want now."
   }
 ]

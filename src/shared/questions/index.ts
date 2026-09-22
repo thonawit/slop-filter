@@ -53,12 +53,27 @@ export interface JevState {
     is_quote?: boolean;
   };
   quoted_post?: { text: string };
-  interests?: string[];
-  excluded_topics?: string[];
   [key: string]: unknown;
 }
 
-export function buildState(post: PostState, interests: string[], excludedTopics: string[]): JevState {
+/**
+ * The state every question in the request shares.
+ *
+ * The user's interests and excluded topics are deliberately NOT here. Each topic question
+ * already carries its own `topic` inside its `instructions`, so a copy in the state was
+ * redundant — and measurably harmful. Adding three interests and one excluded topic moved
+ * the holistic verdict by up to +0.30 on borderline posts, always toward slop:
+ *
+ *   iro_selfdeprecating  0.42 -> 0.72
+ *   iro_humbled_joke     0.43 -> 0.55
+ *   edge_quoted_slop     0.24 -> 0.37
+ *   sin_platitude        1.00 -> 1.00   (unambiguous slop is unaffected)
+ *
+ * This is the documented "large state full of irrelevant detail" failure mode: unrelated
+ * material in the state costs accuracy on every question that does not use it. Anything
+ * added here is paid for by all of them.
+ */
+export function buildState(post: PostState, _interests: string[], _excludedTopics: string[]): JevState {
   const state: JevState = {
     post: {
       platform: post.platform === "x" ? "X (formerly Twitter)" : "LinkedIn",
@@ -72,8 +87,6 @@ export function buildState(post: PostState, interests: string[], excludedTopics:
   if (post.authorHeadline) state.post.author_headline = post.authorHeadline;
   if (post.platform === "x") state.post.is_quote = post.isQuote;
   if (post.quotedText) state.quoted_post = { text: post.quotedText };
-  if (interests.length) state.interests = interests;
-  if (excludedTopics.length) state.excluded_topics = excludedTopics;
   return state;
 }
 

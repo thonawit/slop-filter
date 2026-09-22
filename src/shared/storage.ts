@@ -53,14 +53,3 @@ export function cleanList(list: unknown): string[] {
   }
   return out.slice(0, 20); // keep the request small; 20 topics is plenty
 }
-
-/**
- * Settings that change which questions are asked — a cache-key ingredient.
- *
- * Deliberately excludes preset/thresholds/weights: those are applied in code over cached
- * raw answers, so moving the slider must NOT invalidate the cache. Platform is included
- * because the two batteries genuinely differ.
- */
-export function questionSetKey(s: Settings, platform: Platform): string {
-  return JSON.stringify({ p: platform, m: s.model, i: s.interests, x: s.excludedTopics, c: s.maxPostChars });
-}

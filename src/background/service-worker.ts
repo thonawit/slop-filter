@@ -3,7 +3,7 @@
 
 import { buildQuestions, buildState } from "../shared/questions/index.ts";
 import { buildEvaluation } from "../shared/scoring.ts";
-import { loadSettings, questionSetKey, saveSettings } from "../shared/storage.ts";
+import { loadSettings, saveSettings } from "../shared/storage.ts";
 import { listModels, systemOne, TypeSafeError } from "../shared/typesafe.ts";
 import {
   EMPTY_PLATFORM_STATS,
@@ -65,8 +65,16 @@ async function pushRecent(e: Evaluation): Promise<void> {
 }
 
 // ---- cache of raw responses ----
-// Keyed on the TEXT, not just the id, so an edited post re-asks. NOT keyed on the preset,
-// so moving the slider re-scores cached answers for free.
+//
+// Keyed on a hash of the ACTUAL request payload — state, model and questions — rather than
+// a hand-maintained list of fields. That list was wrong: removing `interests` from the
+// state changed every answer while leaving the key identical, so a stale cache survived a
+// change that invalidated it and the fix could only be measured after clearing by hand.
+//
+// Hashing the payload is complete by construction: anything that can change an answer is
+// in it, and anything that cannot is not. The preset and the weights are deliberately
+// absent from the request, so moving the strictness slider still re-scores cached answers
+// for free — which is the property the old key was trying to preserve.
 interface CacheEntry {
   response: SystemOneResponse;
   at: number;
@@ -76,10 +84,8 @@ function hash(s: string): string {
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
   return (h >>> 0).toString(36);
 }
-function cacheKey(post: PostState, settings: Settings, text: string): string {
-  return `${CACHE_PREFIX}${post.platform}:${post.id}:${hash(text + "\u0000" + post.quotedText)}:${hash(
-    questionSetKey(settings, post.platform),
-  )}`;
+function cacheKey(post: PostState, request: unknown): string {
+  return `${CACHE_PREFIX}${post.platform}:${post.id}:${hash(JSON.stringify(request))}`;
 }
 async function cacheGet(key: string): Promise<CacheEntry | undefined> {
   const got = await chrome.storage.session.get(key);
@@ -112,7 +118,10 @@ async function evaluate(post: PostState): Promise<Evaluation> {
     text,
     quotedText: post.quotedText.slice(0, settings.maxPostChars),
   };
-  const key = cacheKey(post, settings, text);
+  // Build the request first so the cache key can be derived from it.
+  const state = buildState(trimmed, settings.interests, settings.excludedTopics);
+  const questions = buildQuestions(post.platform, settings.interests, settings.excludedTopics);
+  const key = cacheKey(post, { state, model: settings.model, questions });
   const cached = await cacheGet(key);
 
   let response: SystemOneResponse;
@@ -121,8 +130,6 @@ async function evaluate(post: PostState): Promise<Evaluation> {
     response = cached.response;
     fromCache = true;
   } else {
-    const state = buildState(trimmed, settings.interests, settings.excludedTopics);
-    const questions = buildQuestions(post.platform, settings.interests, settings.excludedTopics);
     await acquire();
     try {
       response = await systemOne({ apiKey: settings.apiKey, model: settings.model }, state as never, questions);

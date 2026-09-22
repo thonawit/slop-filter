@@ -10,6 +10,10 @@ import { ADAPTERS, detectPlatform, type PlatformAdapter } from "../platforms/ind
 import type { Evaluation, Platform, PlatformSettings, Settings, Verdict } from "../shared/types.ts";
 import { DEFAULT_PLATFORM_SETTINGS, DEFAULT_SETTINGS } from "../shared/types.ts";
 
+/** Injected by scripts/build.mjs so two builds of the same version are distinguishable. */
+declare const __BUILD_STAMP__: string;
+const VERSION = `${chrome.runtime.getManifest?.().version ?? "?"}+${typeof __BUILD_STAMP__ === "string" ? __BUILD_STAMP__ : "dev"}`;
+
 const ATTR_STATE = "data-slopf"; // pending | evaluated | skipped | error
 const ATTR_ID = "data-slopf-id"; // post id this node was last decorated for
 
@@ -247,6 +251,10 @@ function scan(): void {
   const posts = adapter.findPosts();
   document.documentElement.setAttribute("data-slopf-posts", String(posts.length));
   document.documentElement.setAttribute("data-slopf-platform", platform!);
+  // Which build is actually loaded? Chrome keeps running the old content script until the
+  // extension is reloaded, so "did my change take effect" is otherwise unanswerable from
+  // the page.
+  document.documentElement.setAttribute("data-slopf-version", VERSION);
   for (const { container, article } of posts) void processPost(container, article);
 }
 

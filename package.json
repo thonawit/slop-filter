@@ -1,6 +1,6 @@
 {
   "name": "slop-filter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Chrome extension that hides AI slop on X and LinkedIn, using TypeSafe's Jev model.",
   "type": "module",

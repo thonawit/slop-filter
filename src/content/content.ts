@@ -7,7 +7,7 @@
 // costs nothing and removes a whole class of "works on one, subtly broken on the other".
 
 import { ADAPTERS, detectPlatform, type PlatformAdapter } from "../platforms/index.ts";
-import type { Evaluation, Platform, PlatformSettings, Settings, Verdict } from "../shared/types.ts";
+import type { Evaluation, Platform, PlatformSettings, SessionStats, Settings, Verdict } from "../shared/types.ts";
 import { DEFAULT_PLATFORM_SETTINGS, DEFAULT_SETTINGS } from "../shared/types.ts";
 
 /** Injected by scripts/build.mjs so two builds of the same version are distinguishable. */
@@ -46,6 +46,37 @@ function active(): boolean {
 // ---------------------------------------------------------------------------
 // Messaging
 // ---------------------------------------------------------------------------
+
+/**
+ * Mirror the service worker's running totals onto <html data-slopf-stats>.
+ *
+ * Both feeds virtualize, so counting badges in the DOM only ever sees the handful of posts
+ * currently mounted — that undercounts a long scroll badly. These are the real cumulative
+ * numbers, readable without an extension context.
+ */
+function mirrorStats(stats: SessionStats | undefined): void {
+  if (!stats || !platform) return;
+  const p = stats.byPlatform[platform];
+  if (!p) return;
+  const suppressed = p.hidden + p.collapsed;
+  document.documentElement.setAttribute(
+    "data-slopf-stats",
+    JSON.stringify({
+      evaluated: p.evaluated,
+      cacheHits: p.cacheHits,
+      hidden: p.hidden,
+      collapsed: p.collapsed,
+      highlighted: p.highlighted,
+      skipped: p.skipped,
+      seen: p.evaluated + p.cacheHits + p.skipped,
+      suppressionRate: p.evaluated + p.cacheHits > 0
+        ? Number((suppressed / (p.evaluated + p.cacheHits)).toFixed(3))
+        : null,
+      inputTokens: p.inputTokens,
+      errors: stats.errors,
+    }),
+  );
+}
 
 function send<T>(msg: unknown): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -109,12 +140,14 @@ function apply(container: HTMLElement, article: HTMLElement, ev: Evaluation): vo
 
   if (!reported.has(ev.id)) {
     reported.add(ev.id);
-    send({
+    send<{ stats?: SessionStats }>({
       kind: "outcome",
       platform: ev.platform,
       verdict: ev.verdict as Verdict,
       excluded: ev.reason.startsWith("excluded topic"),
-    }).catch(() => {});
+    })
+      .then((r) => mirrorStats(r.stats))
+      .catch(() => {});
   }
 }
 
@@ -228,7 +261,9 @@ async function processPost(container: HTMLElement, article: HTMLElement): Promis
   if (skip) {
     container.setAttribute(ATTR_STATE, "skipped");
     container.setAttribute(ATTR_ID, id);
-    send({ kind: "skipped", platform: post.platform }).catch(() => {});
+    send<{ stats?: SessionStats }>({ kind: "skipped", platform: post.platform })
+      .then((r) => mirrorStats(r.stats))
+      .catch(() => {});
     return;
   }
 

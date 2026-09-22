@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Slop Filter (Jev)",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Hides AI slop on X and LinkedIn and highlights posts about things you care about, using TypeSafe's Jev model.",
   "minimum_chrome_version": "116",
   "permissions": [

@@ -207,6 +207,32 @@ export function totalStats(s: SessionStats): PlatformStats {
   return out;
 }
 
+/**
+ * One decision, compactly. Kept for the whole browser session so a suppression rate can
+ * be computed over a real scroll rather than over whatever happens to be in the DOM —
+ * both feeds virtualize, so a DOM scrape only ever sees 8-13 posts at a time.
+ *
+ * Short keys on purpose: these are stored in chrome.storage.session, and a few thousand
+ * of them should stay small.
+ */
+export interface LogEntry {
+  /** epoch ms */
+  t: number;
+  p: Platform;
+  /** verdict, or "skip" for a post that was never sent */
+  v: Verdict | "skip";
+  /** composite slop score; 0 for a skip */
+  s: number;
+  /** holistic P(slop), null if the answer was missing */
+  h: number | null;
+  /** highest-scoring signal or structural feature, "" for a skip */
+  d: string;
+  /** true when the answers came from cache rather than the API */
+  c: boolean;
+}
+
+export const LOG_MAX = 5000;
+
 export type Message =
   | { kind: "evaluate"; post: PostState }
   | { kind: "outcome"; platform: Platform; verdict: Verdict; excluded: boolean }
@@ -217,12 +243,16 @@ export type Message =
   | { kind: "set-settings"; patch: Partial<Settings> }
   | { kind: "test-key"; apiKey: string; model: string }
   | { kind: "clear-cache" }
-  | { kind: "get-recent" };
+  | { kind: "get-recent" }
+  | { kind: "get-log" }
+  | { kind: "clear-log" };
 
 export type MessageReply =
   | { ok: true; evaluation: Evaluation }
   | { ok: true; stats: SessionStats }
   | { ok: true; settings: Settings }
   | { ok: true; recent: Evaluation[] }
+  | { ok: true; log: LogEntry[] }
+  | { ok: true; stats: SessionStats; log: LogEntry[] }
   | { ok: true }
   | { ok: false; error: string };

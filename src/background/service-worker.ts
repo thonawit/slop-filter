@@ -14,6 +14,8 @@ import {
   type MessageReply,
   type Platform,
   type PostState,
+  type LogEntry,
+  LOG_MAX,
   type SessionStats,
   type Settings,
   type SystemOneResponse,
@@ -24,6 +26,7 @@ const CACHE_MAX_ENTRIES = 800;
 const RECENT_KEY = "recent";
 const RECENT_MAX = 60;
 const STATS_KEY = "stats";
+const LOG_KEY = "log";
 const MAX_IN_FLIGHT = 4;
 
 // ---- in-flight limiter ----
@@ -62,6 +65,31 @@ async function pushRecent(e: Evaluation): Promise<void> {
   const list = ((got[RECENT_KEY] ?? []) as Evaluation[]).filter((x) => x.id !== e.id);
   list.unshift(e);
   await chrome.storage.session.set({ [RECENT_KEY]: list.slice(0, RECENT_MAX) });
+}
+
+/**
+ * Append one decision to the session log.
+ *
+ * Both feeds virtualize, so counting verdicts by scraping the DOM only ever sees the 8-13
+ * posts currently mounted. This is the record that makes a real suppression rate possible.
+ */
+async function pushLog(entry: LogEntry): Promise<void> {
+  const got = await chrome.storage.session.get(LOG_KEY);
+  const list = (got[LOG_KEY] ?? []) as LogEntry[];
+  list.push(entry);
+  await chrome.storage.session.set({ [LOG_KEY]: list.slice(-LOG_MAX) });
+}
+
+async function getLog(): Promise<LogEntry[]> {
+  const got = await chrome.storage.session.get(LOG_KEY);
+  return (got[LOG_KEY] ?? []) as LogEntry[];
+}
+
+/** Highest-scoring signal or structural feature, for "why was this suppressed". */
+function topDriver(e: Evaluation): string {
+  const all = [...Object.entries(e.signals), ...Object.entries(e.structural)];
+  if (!all.length) return "";
+  return all.sort((a, b) => b[1] - a[1])[0][0];
 }
 
 // ---- cache of raw responses ----
@@ -160,6 +188,15 @@ async function evaluate(post: PostState): Promise<Evaluation> {
     }
   });
   await pushRecent(evaluation);
+  await pushLog({
+    t: evaluation.evaluatedAt,
+    p: post.platform,
+    v: evaluation.verdict,
+    s: Number(evaluation.slopScore.toFixed(3)),
+    h: evaluation.holistic === null ? null : Number(evaluation.holistic.toFixed(3)),
+    d: topDriver(evaluation),
+    c: fromCache,
+  });
   return evaluation;
 }
 
@@ -194,16 +231,20 @@ async function handle(msg: Message): Promise<MessageReply> {
       return { ok: true, evaluation: await evaluate(msg.post) };
     case "outcome":
       await recordOutcome(msg.platform, msg.verdict, msg.excluded);
-      return { ok: true };
+      // Returning stats lets the content script mirror them onto the page, where they can
+      // be read without an extension context.
+      return { ok: true, stats: await getStats() };
     case "skipped":
       await updateStats((s) => {
         s.byPlatform[msg.platform].skipped++;
       });
-      return { ok: true };
+      await pushLog({ t: Date.now(), p: msg.platform, v: "skip", s: 0, h: null, d: "", c: false });
+      return { ok: true, stats: await getStats() };
     case "get-stats":
       return { ok: true, stats: await getStats() };
     case "reset-stats":
       await chrome.storage.session.set({ [STATS_KEY]: EMPTY_STATS, [RECENT_KEY]: [] });
+      await chrome.storage.session.remove(LOG_KEY);
       return { ok: true };
     case "get-settings":
       return { ok: true, settings: await loadSettings() };
@@ -211,6 +252,11 @@ async function handle(msg: Message): Promise<MessageReply> {
       return { ok: true, settings: await saveSettings(msg.patch) };
     case "clear-cache":
       await clearCache();
+      return { ok: true };
+    case "get-log":
+      return { ok: true, log: await getLog() };
+    case "clear-log":
+      await chrome.storage.session.remove(LOG_KEY);
       return { ok: true };
     case "get-recent": {
       const got = await chrome.storage.session.get(RECENT_KEY);

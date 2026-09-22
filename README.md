@@ -254,6 +254,26 @@ test/scoring.test.ts                unit tests (no key, no network)
 samples/x.json  samples/linkedin.json
 ```
 
+## Measuring a real rate
+
+Both feeds virtualize — only ~12 posts stay mounted at a time — so counting badges in the
+DOM undercounts a long scroll badly. Every decision is therefore logged for the browser
+session (5,000 entries max, in `chrome.storage.session`, cleared when Chrome closes).
+
+- **Popup → Diagnostics → Copy log** puts the whole session on the clipboard as JSON: a
+  summary (counts, suppression rate, top drivers, holistic distribution), the per-platform
+  stats, and every individual decision.
+- The content script also mirrors the running totals onto `<html data-slopf-stats>`, so
+  the true cumulative rate is readable from the page without an extension context:
+
+```js
+JSON.parse(document.documentElement.dataset.slopfStats)
+// { evaluated, cacheHits, hidden, collapsed, highlighted, skipped,
+//   seen, suppressionRate, inputTokens, errors }
+```
+
+Nothing leaves the browser: the log is session-scoped local storage.
+
 ## Tests
 
 ```bash

@@ -1,5 +1,5 @@
 import { detectPlatform } from "../platforms/index.ts";
-import type { Evaluation, Platform, Preset, SessionStats, Settings } from "../shared/types.ts";
+import type { Evaluation, LogEntry, Platform, Preset, SessionStats, Settings } from "../shared/types.ts";
 import { PLATFORM_LABEL, totalStats } from "../shared/types.ts";
 
 const PRESETS: Preset[] = ["relaxed", "balanced", "strict"];
@@ -149,6 +149,49 @@ $("preset").addEventListener("change", (e) => {
   const preset = PRESETS[Number((e.target as HTMLInputElement).value)] ?? "balanced";
   void patchPlatform({ preset });
 });
+/**
+ * Copy the whole session's decisions as JSON.
+ *
+ * Counting badges in the feed undercounts badly — both platforms virtualize and only keep
+ * about a dozen posts mounted — so this is the honest record of what the filter actually
+ * did, plus a summary that is usable without parsing it.
+ */
+$("copyLog").addEventListener("click", async () => {
+  const status = $("copyStatus");
+  try {
+    const [{ log }, { stats }] = await Promise.all([
+      send<{ log: LogEntry[] }>({ kind: "get-log" }),
+      send<{ stats: SessionStats }>({ kind: "get-stats" }),
+    ]);
+    const judged = log.filter((e) => e.v !== "skip");
+    const suppressed = judged.filter((e) => e.v === "hide" || e.v === "collapse");
+    const byDriver: Record<string, number> = {};
+    for (const e of suppressed) byDriver[e.d] = (byDriver[e.d] ?? 0) + 1;
+    const summary = {
+      posts: log.length,
+      judged: judged.length,
+      skipped: log.length - judged.length,
+      hidden: judged.filter((e) => e.v === "hide").length,
+      collapsed: judged.filter((e) => e.v === "collapse").length,
+      highlighted: judged.filter((e) => e.v === "highlight").length,
+      suppressionRate: judged.length ? Number((suppressed.length / judged.length).toFixed(3)) : null,
+      topDrivers: Object.entries(byDriver).sort((a, b) => b[1] - a[1]).slice(0, 8),
+      holisticBands: {
+        "0.8-1.0": judged.filter((e) => e.h !== null && e.h >= 0.8).length,
+        "0.5-0.8": judged.filter((e) => e.h !== null && e.h >= 0.5 && e.h < 0.8).length,
+        "0.2-0.5": judged.filter((e) => e.h !== null && e.h >= 0.2 && e.h < 0.5).length,
+        "0.0-0.2": judged.filter((e) => e.h !== null && e.h < 0.2).length,
+      },
+    };
+    await navigator.clipboard.writeText(JSON.stringify({ summary, stats, log }, null, 1));
+    status.textContent = `Copied ${log.length} decisions.`;
+    status.className = "status ok";
+  } catch (e) {
+    status.textContent = (e as Error).message;
+    status.className = "status err";
+  }
+});
+
 $("openOptions").addEventListener("click", openOptions);
 $("resetStats").addEventListener("click", async () => {
   await send({ kind: "reset-stats" });

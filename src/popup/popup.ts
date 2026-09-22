@@ -10,6 +10,16 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 /** Which feed is the active tab on? Drives the per-platform controls. */
 let current: Platform | null = null;
 
+/**
+ * The session log, refreshed by the poll below.
+ *
+ * Held in memory on purpose. A clipboard write must happen inside the user-activation
+ * window that the click created, and awaiting the log fetch first spends that window —
+ * `navigator.clipboard.writeText` then rejects and the copy silently does nothing.
+ */
+let cachedLog: LogEntry[] = [];
+let cachedStats: SessionStats | null = null;
+
 function send<T>(msg: unknown): Promise<T> {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(msg, (reply: T & { ok: boolean; error?: string }) => {
@@ -107,14 +117,18 @@ function renderRecent(list: Evaluation[]): void {
 }
 
 async function refresh(): Promise<void> {
-  const [{ settings }, { stats }, { recent }] = await Promise.all([
+  const [{ settings }, { stats }, { recent }, { log }] = await Promise.all([
     send<{ settings: Settings }>({ kind: "get-settings" }),
     send<{ stats: SessionStats }>({ kind: "get-stats" }),
     send<{ recent: Evaluation[] }>({ kind: "get-recent" }),
+    send<{ log: LogEntry[] }>({ kind: "get-log" }),
   ]);
+  cachedLog = log;
+  cachedStats = stats;
   renderSettings(settings);
   renderStats(stats);
   renderRecent(recent);
+  $<HTMLButtonElement>("copyLog").textContent = `Copy log (${log.length})`;
 }
 
 function openOptions(e?: Event): void {
@@ -153,43 +167,75 @@ $("preset").addEventListener("change", (e) => {
  * Copy the whole session's decisions as JSON.
  *
  * Counting badges in the feed undercounts badly — both platforms virtualize and only keep
- * about a dozen posts mounted — so this is the honest record of what the filter actually
- * did, plus a summary that is usable without parsing it.
+ * about a dozen posts mounted — so this is the honest record of what the filter did.
+ *
+ * Built from the in-memory copy and written synchronously: an `await` before the clipboard
+ * call spends the click's user activation and the write is rejected.
  */
-$("copyLog").addEventListener("click", async () => {
-  const status = $("copyStatus");
+function buildReport(): string {
+  const log = cachedLog;
+  const judged = log.filter((e) => e.v !== "skip");
+  const suppressed = judged.filter((e) => e.v === "hide" || e.v === "collapse");
+  const byDriver: Record<string, number> = {};
+  for (const e of suppressed) byDriver[e.d] = (byDriver[e.d] ?? 0) + 1;
+  const summary = {
+    posts: log.length,
+    judged: judged.length,
+    skipped: log.length - judged.length,
+    hidden: judged.filter((e) => e.v === "hide").length,
+    collapsed: judged.filter((e) => e.v === "collapse").length,
+    highlighted: judged.filter((e) => e.v === "highlight").length,
+    suppressionRate: judged.length ? Number((suppressed.length / judged.length).toFixed(3)) : null,
+    topDrivers: Object.entries(byDriver).sort((a, b) => b[1] - a[1]).slice(0, 8),
+    holisticBands: {
+      "0.8-1.0": judged.filter((e) => e.h !== null && e.h >= 0.8).length,
+      "0.5-0.8": judged.filter((e) => e.h !== null && e.h >= 0.5 && e.h < 0.8).length,
+      "0.2-0.5": judged.filter((e) => e.h !== null && e.h >= 0.2 && e.h < 0.5).length,
+      "0.0-0.2": judged.filter((e) => e.h !== null && e.h < 0.2).length,
+    },
+  };
+  return JSON.stringify({ summary, stats: cachedStats, log }, null, 1);
+}
+
+/** execCommand is deprecated but still the reliable path inside an extension popup. */
+function copyFallback(text: string): boolean {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  let ok = false;
   try {
-    const [{ log }, { stats }] = await Promise.all([
-      send<{ log: LogEntry[] }>({ kind: "get-log" }),
-      send<{ stats: SessionStats }>({ kind: "get-stats" }),
-    ]);
-    const judged = log.filter((e) => e.v !== "skip");
-    const suppressed = judged.filter((e) => e.v === "hide" || e.v === "collapse");
-    const byDriver: Record<string, number> = {};
-    for (const e of suppressed) byDriver[e.d] = (byDriver[e.d] ?? 0) + 1;
-    const summary = {
-      posts: log.length,
-      judged: judged.length,
-      skipped: log.length - judged.length,
-      hidden: judged.filter((e) => e.v === "hide").length,
-      collapsed: judged.filter((e) => e.v === "collapse").length,
-      highlighted: judged.filter((e) => e.v === "highlight").length,
-      suppressionRate: judged.length ? Number((suppressed.length / judged.length).toFixed(3)) : null,
-      topDrivers: Object.entries(byDriver).sort((a, b) => b[1] - a[1]).slice(0, 8),
-      holisticBands: {
-        "0.8-1.0": judged.filter((e) => e.h !== null && e.h >= 0.8).length,
-        "0.5-0.8": judged.filter((e) => e.h !== null && e.h >= 0.5 && e.h < 0.8).length,
-        "0.2-0.5": judged.filter((e) => e.h !== null && e.h >= 0.2 && e.h < 0.5).length,
-        "0.0-0.2": judged.filter((e) => e.h !== null && e.h < 0.2).length,
-      },
-    };
-    await navigator.clipboard.writeText(JSON.stringify({ summary, stats, log }, null, 1));
-    status.textContent = `Copied ${log.length} decisions.`;
-    status.className = "status ok";
-  } catch (e) {
-    status.textContent = (e as Error).message;
-    status.className = "status err";
+    ok = document.execCommand("copy");
+  } catch {
+    ok = false;
   }
+  ta.remove();
+  return ok;
+}
+
+$("copyLog").addEventListener("click", () => {
+  const status = $("copyStatus");
+  if (!cachedLog.length) {
+    status.textContent = "Nothing logged yet — scroll a feed first.";
+    status.className = "status err";
+    return;
+  }
+  const text = buildReport();
+  const done = (msg: string, kind: "ok" | "err") => {
+    status.textContent = msg;
+    status.className = `status ${kind}`;
+  };
+  // Synchronous fallback first so the activation window is never at risk.
+  if (copyFallback(text)) {
+    done(`Copied ${cachedLog.length} decisions.`, "ok");
+    return;
+  }
+  navigator.clipboard
+    .writeText(text)
+    .then(() => done(`Copied ${cachedLog.length} decisions.`, "ok"))
+    .catch((e: Error) => done(`Could not copy: ${e.message}`, "err"));
 });
 
 $("openOptions").addEventListener("click", openOptions);

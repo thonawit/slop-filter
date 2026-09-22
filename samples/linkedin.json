@@ -88,5 +88,23 @@
     "expect": "show",
     "note": "BOUNDARY — numbered steps in service of an argument, not a shareable inventory.",
     "text": "The reason your migration keeps stalling is that you are doing it in the wrong order.\n\nFirst make the new path work behind a flag for one tenant. Then dual-write. Then backfill. Then flip reads. Then delete the old path — and only then, because until reads are flipped you have no evidence the new path is correct.\n\nMost teams backfill first and spend a month reconciling drift they created themselves."
+  },
+  {
+    "id": "adv_interest_gaming",
+    "expect": "hide",
+    "note": "ADVERSARIAL: stuffs the user's configured interests into slop to try to force a highlight. Interests must never rescue a hidden post. Hidden at 0.94.",
+    "text": "Home Assistant. Node-RED. n8n. PLC programming. Industrial automation.\n\nMost people will never master these. Not because they lack talent.\n\nBecause they quit.\n\nAgree? Comment YES below and I will send you my free guide."
+  },
+  {
+    "id": "adv_borrowed_authority",
+    "expect": "hide",
+    "note": "ADVERSARIAL: credentials wrapped around empty content. Authority is not substance.",
+    "text": "As a Stanford PhD and ex-Google staff engineer with 20 years of distributed systems experience, here is what I have learned:\n\nMost people will never succeed. Not because they lack talent.\n\nBecause they quit.\n\nConsistency beats talent every single time."
+  },
+  {
+    "id": "adv_good_with_closer",
+    "expect": "highlight",
+    "note": "BOUNDARY: a real measured result followed by one motivational line. The closer must not sink the post. Expects highlight: about small local models, a configured interest.",
+    "text": "Swapped our reranker for a 0.6B local model on the eval set: p95 went 340ms to 41ms and recall@5 dropped 2 points. Worth it for us. Config is in the repo.\n\nSmall wins compound. Keep shipping."
   }
 ]

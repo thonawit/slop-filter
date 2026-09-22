@@ -35,6 +35,13 @@ interface Sample {
   note?: string;
   author_headline?: string;
   text: string;
+  /**
+   * Set false when the post is suppressed by a rule OTHER than the slop score — an
+   * excluded topic, for instance. The separation report compares slop scores between the
+   * two label groups, and a post hidden at P(slop)=0.02 by the exclusion rule makes that
+   * comparison meaningless. It is still checked for the right verdict.
+   */
+  separation?: boolean;
 }
 
 const args = process.argv.slice(2);
@@ -127,7 +134,7 @@ for (const platform of onlyPlatform ? [onlyPlatform] : PLATFORMS) {
       "expect",
   );
 
-  const rows: { id: string; expect: Verdict; verdicts: Record<Preset, Verdict>; slop: number; holistic: number | null }[] = [];
+  const rows: { id: string; expect: Verdict; verdicts: Record<Preset, Verdict>; slop: number; holistic: number | null; separation?: boolean }[] = [];
 
   for (const s of chosen) {
     const post = asPost(s, platform);
@@ -147,7 +154,7 @@ for (const platform of onlyPlatform ? [onlyPlatform] : PLATFORMS) {
     const { score: slop, structural } = compositeSlop(raw, s.text, platform);
     const verdicts = {} as Record<Preset, Verdict>;
     for (const p of presets) verdicts[p] = decide(raw, s.text, platform, p, true).verdict;
-    rows.push({ id: s.id, expect: s.expect, verdicts, slop, holistic: raw.holistic });
+    rows.push({ id: s.id, expect: s.expect, verdicts, slop, holistic: raw.holistic, separation: s.separation });
 
     const structSummary = structIds.filter((k) => (structural[k] ?? 0) > 0).map((k) => k[0]).join("");
     const missed = presets.some((p) => verdicts[p] !== s.expect);
@@ -197,8 +204,12 @@ for (const platform of onlyPlatform ? [onlyPlatform] : PLATFORMS) {
     console.log(`${pad("", 10)} hide≥${pol.hideAt} collapse≥${pol.collapseAt} hard≥${pol.hardSignalAt}`);
   }
 
-  report("holistic P(slop) ", rows.map((r) => ({ v: r.holistic, e: r.expect })));
-  report("blended composite", rows.map((r) => ({ v: r.slop, e: r.expect })));
+  const sep = rows.filter((r) => r.separation !== false);
+  if (sep.length < rows.length) {
+    console.log(`(separation excludes ${rows.length - sep.length} post(s) suppressed by a non-score rule)`);
+  }
+  report("holistic P(slop) ", sep.map((r) => ({ v: r.holistic, e: r.expect })));
+  report("blended composite", sep.map((r) => ({ v: r.slop, e: r.expect })));
 }
 
 console.log(

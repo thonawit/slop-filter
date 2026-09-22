@@ -133,8 +133,15 @@ export const CORE_SIGNALS: SignalSet = {
         focus:
           "The 'discipline is choosing what you want most over what you want now' shape. A specific observation, a joke, or a concrete argument about a real thing is NOT this, even if it is short. A post can mention a real event and still be mostly platitudes.",
       },
-      "Generic maxims with little or no specific content: 'consistency beats talent', 'your network is your net worth', 'growth happens outside your comfort zone', 'most people don't fail, they quit'",
-      "Mostly specific information, a concrete story with particulars, a joke, a question, or a clearly stated argument",
+      "Generic maxims with little or no specific content, asserted sincerely: 'consistency beats talent', 'your network is your net worth', 'growth happens outside your comfort zone', 'most people don't fail, they quit'",
+      {
+        what: "Mostly specific information, a concrete story with particulars, a question, or a clearly stated argument — OR a joke, parody or self-deprecating remark that QUOTES or MOCKS a platitude rather than asserting one",
+        note: "Judge whether the author means it. Repeating a maxim in order to laugh at it is the opposite of posting a maxim.",
+        examples: [
+          "today I learned that consistency beats talent, which is convenient because I have neither",
+          "every one of these posts is the same four sentences and somehow they all get 40k likes",
+        ],
+      },
     ),
   },
 
@@ -277,9 +284,40 @@ export const STRUCTURAL_WEIGHTS: Record<Platform, Record<string, number>> = {
   },
 };
 
-const THREAD_MARKER = /(\u{1F9F5})|(^|\s)\(?\d{1,2}\s*\/\s*(\d{1,2}|n)\)?(\s|$)/u;
+const THREAD_EMOJI = /\u{1F9F5}/u;
+
+/** "1/12", "(3/7)", "2/n" — a position marker, as opposed to arithmetic. */
+const POSITION_MARKER = /\(?\d{1,2}\s*\/\s*(\d{1,2}|n)\)?/;
+
+/**
+ * Emoji- or bullet-headed list lines.
+ *
+ * Deliberately does NOT match "1." or "- ". A numbered or dashed list is ordinary writing
+ * — the sample set's own `enumerated_substance` case is exactly that — whereas a column of
+ * ✅ / 🔥 / 👉 headers is the engagement-post shape. Measured: the earlier version scored
+ * emoji_bullets 1.00 on "1. Install it / 2. Configure the key / 3. Run the tests".
+ */
 const LEADING_EMOJI =
-  /^\s*(?:[\u{1F300}-\u{1FAFF}\u{2190}-\u{21FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{2022}\u{25AA}\u{25CF}\u{27A4}]|[-*\u2013\u2014]|\d{1,2}[.)])\s+/u;
+  /^\s*(?:[\u{1F300}-\u{1FAFF}\u{2190}-\u{21FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{2022}\u{25AA}\u{25CF}\u{27A4}])\s*/u;
+
+/**
+ * A thread position marker, as opposed to a fraction, a date or an aspect ratio.
+ *
+ * Position markers sit at the START or END of a line — "1/12" opening a post, "3/7"
+ * closing one. Arithmetic sits mid-sentence. Measured: the earlier
+ * "digits-slash-digits anywhere" regex scored 1.00 on "we cut latency to 1/3 of what it
+ * was", "shipping on 9/12 after the freeze lifts" and "render at 16/9 for the deck".
+ */
+function hasThreadMarker(text: string): boolean {
+  if (THREAD_EMOJI.test(text)) return true;
+  const tail = new RegExp(POSITION_MARKER.source + "$");
+  return text.split("\n").some((line) => {
+    const l = line.trim();
+    if (!l) return false;
+    const head = l.match(POSITION_MARKER);
+    return (head !== null && head.index === 0) || tail.test(l);
+  });
+}
 
 export function structuralSignals(text: string, platform: Platform): Record<string, number> {
   const lines = text
@@ -300,7 +338,7 @@ export function structuralSignals(text: string, platform: Platform): Record<stri
   const hashtag_spam = ramp(tags, 2, 6);
 
   const out: Record<string, number> = { emoji_bullets, staccato, hashtag_spam };
-  if (platform === "x") out.thread_marker = THREAD_MARKER.test(text) ? 1 : 0;
+  if (platform === "x") out.thread_marker = hasThreadMarker(text) ? 1 : 0;
   return out;
 }
 

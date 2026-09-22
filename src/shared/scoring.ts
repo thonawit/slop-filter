@@ -33,7 +33,9 @@ export function extractAnswers(
   interests: string[],
   excludedTopics: string[],
 ): RawAnswers {
-  const a = response.answers;
+  // A malformed or proxied response can carry a null/absent answers map. Measured:
+  // this threw, putting every card into the error state instead of degrading quietly.
+  const a = (response?.answers ?? {}) as SystemOneResponse["answers"];
 
   const signals: Record<string, number> = {};
   for (const id of Object.keys(signalsFor(platform))) {

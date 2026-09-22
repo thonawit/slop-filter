@@ -1,0 +1,152 @@
+[
+  {
+    "id": "thread_bait",
+    "expect": "hide",
+    "note": "classic withheld-value thread opener",
+    "text": "10 AI tools that will replace your job in 2026. 🧵\n\nMost people have never heard of #7.\n\nBookmark this before it gets taken down. 1/12"
+  },
+  {
+    "id": "engagement_bait",
+    "expect": "hide",
+    "note": "pure reply farming",
+    "text": "Name a better duo than coffee and a Sunday morning deploy. I'll wait. 👇"
+  },
+  {
+    "id": "fake_profundity",
+    "expect": "hide",
+    "note": "the aphorism shape; short, so the substance score must not rescue it",
+    "text": "Discipline is choosing between what you want now and what you want most."
+  },
+  {
+    "id": "ai_prose",
+    "expect": "hide",
+    "note": "machine-sounding contrast structure with no content",
+    "text": "It's not about the tools.\n\nIt's about the mindset.\n\nMost people optimize for output. The best optimize for leverage. The difference compounds.\n\nLet that sink in."
+  },
+  {
+    "id": "hype_shill",
+    "expect": "hide",
+    "note": "superlatives, zero checkable detail",
+    "text": "This changes EVERYTHING. 🚀\n\nI've been testing it for 3 days and I'm genuinely shaken. Nobody is talking about this yet. We are so back."
+  },
+  {
+    "id": "rage_bait",
+    "expect": "hide",
+    "note": "contrarian claim, no reasoning",
+    "text": "Unpopular opinion: university is a scam and everyone involved knows it. They just can't say it out loud."
+  },
+  {
+    "id": "flex_brag",
+    "expect": "hide",
+    "note": "the number is the whole post",
+    "text": "just crossed $40k MRR 🚀\n\n18 months ago I was broke and doubting myself.\n\nnever give up on your vision 🙏"
+  },
+  {
+    "id": "sells_course",
+    "expect": "hide",
+    "note": "lead magnet",
+    "text": "My AI automation cohort opens Monday.\n\n50 spots. 6 weeks. Last cohort sold out in 4 hours.\n\nReply GROWTH and I'll send you the syllabus."
+  },
+  {
+    "id": "listicle_farm",
+    "expect": "hide",
+    "note": "roundup of obvious items with stock adjectives",
+    "text": "7 books that will change your life:\n\n📚 Atomic Habits — a masterpiece\n📚 Deep Work — essential\n📚 The Lean Startup — a classic\n📚 Zero to One — mind-blowing\n📚 Sapiens — brilliant\n📚 Can't Hurt Me — raw\n📚 The Alchemist — timeless"
+  },
+  {
+    "id": "staccato_broetry",
+    "expect": "hide",
+    "note": "tests the code-side staccato + emoji-bullet features",
+    "text": "I fired my best engineer.\n\nHe was brilliant.\n\nHe shipped fast.\n\nBut he never said good morning.\n\nCulture > code.\n\nAlways."
+  },
+  {
+    "id": "recycled_anecdote",
+    "expect": "hide",
+    "note": "well-worn circulating story told as first-hand",
+    "text": "A CEO once asked me a single question in an interview:\n\n\"What did you fail at last week?\"\n\nI froze. I had no answer.\n\nHe said: \"If you're not failing, you're not trying.\"\n\nI got the job."
+  },
+  {
+    "id": "short_specific",
+    "expect": "show",
+    "note": "CRITICAL: short, no checkable fact, but a real observation. Must not be hidden.",
+    "text": "every codebase has exactly one file that everybody is scared to touch and it is always called utils.ts"
+  },
+  {
+    "id": "short_joke",
+    "expect": "show",
+    "note": "CRITICAL: pure joke, eight words, zero information",
+    "text": "my code works and I have no idea why"
+  },
+  {
+    "id": "technical_substantial",
+    "expect": "highlight",
+    "note": "the easy positive case | expects highlight: matches sample interest (small AI decision models)",
+    "text": "Swapped our reranker for a 0.6B local model on the eval set: p95 went 340ms -> 41ms, recall@5 dropped 2 points. Worth it for us. Config and the eval harness are in the repo."
+  },
+  {
+    "id": "plain_announcement",
+    "expect": "show",
+    "note": "boring but real",
+    "text": "Postgres 19 beta 1 is out. Logical replication finally handles DDL, and the planner change for correlated subqueries is significant if you have a lot of EXISTS clauses."
+  },
+  {
+    "id": "genuine_question",
+    "expect": "highlight",
+    "note": "BOUNDARY vs engagement_bait — a real question, not a reply farm | expects highlight: matches sample interest (Home Assistant + PLC)",
+    "text": "Has anyone got Home Assistant talking to a Siemens S7-1200 without going through Node-RED? Everything I find is either ancient or assumes Modbus TCP, which this one doesn't expose."
+  },
+  {
+    "id": "build_in_public_good",
+    "expect": "show",
+    "note": "BOUNDARY vs flex_brag — has the number AND what produced it",
+    "text": "Hit 400 paying users this week. The thing that actually moved it was cutting signup from 5 fields to 1 and letting people use the app before making an account. Conversion went 3.1% -> 7.8% in a fortnight."
+  },
+  {
+    "id": "opinion_with_reasoning",
+    "expect": "show",
+    "note": "BOUNDARY vs rage_bait — strong take, but argued",
+    "text": "I think microservices were a mistake for teams under 20 people. You trade one hard problem (a big codebase) for three harder ones: distributed transactions, versioned contracts, and debugging across process boundaries. We merged four services back into one last month and our on-call pages dropped by half."
+  },
+  {
+    "id": "free_release",
+    "expect": "highlight",
+    "note": "BOUNDARY vs sells_something — a call to action, but nothing is being sold | expects highlight: matches sample interest (Home Assistant tooling)",
+    "text": "Open-sourced the little tool I use to diff Home Assistant automations between config versions. MIT, no telemetry, works offline. Issues welcome if it breaks on your setup."
+  },
+  {
+    "id": "enthusiasm_with_specifics",
+    "expect": "show",
+    "note": "BOUNDARY vs hype_shill — excited, but names things",
+    "text": "The new Framework 16 mainboard finally fixed the fan curve bug that made it ramp to 100% on any sustained load. Six months late, but idle is now 32dB instead of 48dB. Genuinely happy about this one."
+  },
+  {
+    "id": "quote_dunk",
+    "expect": "show",
+    "note": "BOUNDARY — a short critical reply-style post that is still a real point",
+    "text": "this benchmark measures how fast the cache is, not how fast the model is. the 'speedup' disappears the moment you change the prompt."
+  },
+  {
+    "id": "mild_thread_ok",
+    "expect": "show",
+    "note": "BOUNDARY vs thread_bait — numbered, but the post says something on its own",
+    "text": "1/ Spent the week tracing why our p99 doubled after the Postgres upgrade. It was not the upgrade. It was an autovacuum setting we had pinned in 2021 and forgotten about."
+  },
+  {
+    "id": "brand_product_news",
+    "expect": "show",
+    "note": "REGRESSION: live false positive. @nvidia hidden at 57% on ai_prose=0.80. Corporate copy is polished by design; that is not model-generated engagement farming. Rewritten 2026-09-22 to carry real specifics, so it tests the model rather than an arguable label.",
+    "text": "Jetson Thor is available today. 128GB unified memory, 2070 FP4 TFLOPS, and a 130W power envelope. Ships with JetPack 7 and runs the Isaac GR00T N1.6 models out of the box. Dev kits from $3,499 through partners worldwide."
+  },
+  {
+    "id": "brand_data_update",
+    "expect": "show",
+    "note": "REGRESSION: live false positive. @Polymarket hidden at 46% on ai_prose=0.72 despite substance 0.87. Clipped house style on a data account.",
+    "text": "Odds update: the market has moved 8 points since this morning. Volume is up 2.3x week over week, and the spread between the top two outcomes is now the narrowest it has been this month."
+  },
+  {
+    "id": "hashtag_industrial",
+    "expect": "show",
+    "note": "REGRESSION: live false positive. Hidden at 48% purely on hashtag_spam=1.00 — an industrial automation post whose content is the attached video.",
+    "text": "Inside Bizerba's fully automated sandwich production system\n\n#Robotics #MachineLearning #ArtificialIntelligence #ML #Innovation #FoodTech"
+  }
+]

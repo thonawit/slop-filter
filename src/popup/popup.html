@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Slop Filter</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="row">
+      <div class="brand"><span class="logo">✗</span> Slop Filter</div>
+      <label class="switch" title="Enable or disable everywhere">
+        <input type="checkbox" id="enabled" />
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <!-- The platform of the active tab. Hidden when the tab is neither X nor LinkedIn. -->
+    <section class="block" id="platformBlock" hidden>
+      <div class="row">
+        <span class="label">On <strong id="platformName">X</strong></span>
+        <label class="switch" title="Enable or disable on this platform">
+          <input type="checkbox" id="platformEnabled" />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="label">Slop filter</span>
+        <span class="value" id="presetLabel">Balanced</span>
+      </div>
+      <input type="range" id="preset" min="0" max="2" step="1" value="1" aria-label="Slop filter strictness" />
+      <div class="ticks"><span>Relaxed</span><span>Balanced</span><span>Strict</span></div>
+    </section>
+
+    <div id="notOnFeed" class="warning" hidden>
+      Open <a href="https://x.com/home" target="_blank" rel="noreferrer">X</a> or
+      <a href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer">LinkedIn</a> to use the filter.
+    </div>
+
+    <section class="block row">
+      <span class="label">Highlight my interests</span>
+      <label class="switch">
+        <input type="checkbox" id="highlightInterests" />
+        <span class="slider"></span>
+      </label>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><div class="n" id="statHidden">0</div><div class="t">Hidden</div></div>
+      <div class="stat"><div class="n" id="statHighlighted">0</div><div class="t">Highlighted</div></div>
+      <div class="caption">this session, both platforms</div>
+    </section>
+
+    <div id="warning" class="warning" hidden></div>
+
+    <details class="diag">
+      <summary>Diagnostics</summary>
+      <table class="perPlatform">
+        <thead><tr><th></th><th>X</th><th>LinkedIn</th></tr></thead>
+        <tbody>
+          <tr><td>Evaluated</td><td id="xEval">0</td><td id="liEval">0</td></tr>
+          <tr><td>Hidden</td><td id="xHidden">0</td><td id="liHidden">0</td></tr>
+          <tr><td>Collapsed</td><td id="xColl">0</td><td id="liColl">0</td></tr>
+          <tr><td>Skipped</td><td id="xSkip">0</td><td id="liSkip">0</td></tr>
+          <tr><td>Cache hits</td><td id="xCache">0</td><td id="liCache">0</td></tr>
+          <tr><td>Tokens</td><td id="xTok">0</td><td id="liTok">0</td></tr>
+        </tbody>
+      </table>
+      <dl>
+        <dt>Est. cost</dt><dd id="dCost">$0.0000</dd>
+        <dt>Model</dt><dd id="dModel">–</dd>
+        <dt>Errors</dt><dd id="dErrors">0</dd>
+      </dl>
+      <div id="lastError" class="err" hidden></div>
+      <div class="recent" id="recent"></div>
+      <div class="row gap">
+        <button id="resetStats" type="button">Reset stats</button>
+        <button id="clearCache" type="button">Clear cache</button>
+      </div>
+    </details>
+
+    <footer>
+      <a href="#" id="openOptions">Interests &amp; settings</a>
+    </footer>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

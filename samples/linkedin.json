@@ -1,0 +1,92 @@
+[
+  {
+    "id": "reference_jev_post",
+    "expect": "show",
+    "author_headline": "Founder | Make Automations",
+    "text": "LinkedIn is so much better with Jev\nOver the past few years, I would say that LinkedIn has become and absolute dumpster fire for AI content, it just showcases the bad side of AI to potential clients which makes them instantly sceptic.\nAnyway...\nI decided enough was enough and spent a few minutes creating my own slop filter plugin that uses Jev to instantly classify, lazy slop posts, but also what I might be interested in. It's still early days but I will be adding a feature to exclude certain topics that I am not interested in, for example AI and automation hate... Grinds my gears no end."
+  },
+  {
+    "id": "broetry_platitudes",
+    "expect": "hide",
+    "author_headline": "Leadership Coach | Keynote Speaker",
+    "text": "I got rejected 47 times.\n\nThen one yes changed everything.\n\nHere's what nobody tells you:\n\n→ Rejection is redirection.\n→ Consistency beats talent.\n→ Your network is your net worth.\n→ Growth happens outside your comfort zone.\n\nIt's not about the destination.\nIt's about who you become on the journey.\n\nLet that sink in.\n\nAgree? ♻️ Repost to help someone who needs this today."
+  },
+  {
+    "id": "engagement_bait_poll",
+    "expect": "hide",
+    "author_headline": "Growth Marketer",
+    "text": "Quick question for my network 👇\n\nWhich matters more in 2026?\n\nA) Hard skills\nB) Soft skills\nC) Both\n\nComment your answer below and follow me for more insights like this! 🚀"
+  },
+  {
+    "id": "humble_brag",
+    "expect": "collapse",
+    "author_headline": "Senior Product Manager",
+    "text": "Humbled and grateful to share that I've been named to the Top 40 Under 40 list this year. 🙏\n\nI don't usually post about wins, but this one means a lot. None of it would be possible without my incredible team, my mentors, and everyone who believed in me along the way.\n\nOnward! 💪"
+  },
+  {
+    "id": "sells_course",
+    "expect": "hide",
+    "author_headline": "AI Educator | 200k followers",
+    "text": "I built a 6-figure business with ChatGPT in 90 days.\n\nMost people are using AI wrong. That's why I created the exact prompt system I use every day.\n\n50+ prompts. Zero fluff.\n\nWant it for free? Comment \"PROMPTS\" and I'll DM it to you.\n\n(Must be connected)"
+  },
+  {
+    "id": "substantive_engineering",
+    "expect": "show",
+    "author_headline": "Staff Engineer, Payments",
+    "text": "We cut p95 checkout latency from 1.8s to 640ms last quarter. The biggest single win was not the cache we spent two sprints on — it was moving fraud scoring off the request path. The synchronous call to the risk service averaged 400ms and had a long tail to 2s under load. We now score asynchronously within 300ms of order creation and only block fulfilment, not checkout. Chargeback rate is unchanged after 8 weeks (0.31% vs 0.30%). Happy to share the rollout plan if anyone is doing something similar."
+  },
+  {
+    "id": "rage_bait",
+    "expect": "hide",
+    "author_headline": "Founder & CEO",
+    "text": "Unpopular opinion: university degrees are completely worthless in 2026.\n\nI'd hire a 19-year-old with a GitHub profile over a Harvard grad every single time.\n\nFight me in the comments."
+  },
+  {
+    "id": "ai_hate",
+    "expect": "hide",
+    "author_headline": "Copywriter",
+    "text": "Every day my feed is full of people cheering on automation and \"AI agents\" like it's progress. It isn't. It's a race to replace skilled people with worse, cheaper output. If you're building automation tools right now, you are part of the problem, and history will not be kind to you."
+  },
+  {
+    "id": "job_announcement_useful",
+    "expect": "highlight",
+    "author_headline": "Engineering Manager, Robotics",
+    "text": "We're hiring two controls engineers for our Manchester site (hybrid, 3 days on site). You'd be working on PLC programming for automated packaging lines — Siemens TIA Portal, S7-1500, some Beckhoff TwinCAT. £55–70k depending on experience. Interview loop is a 30-min call, a 2-hour practical on a real rig, and a team chat. Link to the JD in the comments; DM me with questions."
+  },
+  {
+    "id": "interest_home_automation",
+    "expect": "highlight",
+    "author_headline": "Maker",
+    "text": "Finally moved my home automation off a Raspberry Pi 3 to a used Lenovo M720q running Proxmox. Home Assistant in a VM, Node-RED and n8n in LXCs, Zigbee2MQTT on a SONOFF dongle passed through. Idle draw is 9W measured at the wall vs 4W for the Pi, but automations that used to take 2–3 seconds now fire instantly and I can finally run Frigate with a Coral TPU. Config repo in the comments if useful."
+  },
+  {
+    "id": "formula_story_ai",
+    "expect": "hide",
+    "author_headline": "Career Coach",
+    "text": "Last week a junior developer asked me for advice.\n\nShe was scared she wasn't good enough.\n\nI told her something that changed my life 10 years ago.\n\n\"You don't need to be the smartest person in the room. You need to be the one who keeps showing up.\"\n\nShe cried.\n\nHere are 5 lessons I've learned about imposter syndrome:\n\n1. Everyone feels it.\n2. It means you're growing.\n3. Compare yourself to yesterday, not to others.\n4. Ask for help.\n5. Celebrate small wins.\n\nWhich one resonates with you? 👇"
+  },
+  {
+    "id": "carousel_listicle",
+    "expect": "show",
+    "note": "REGRESSION GUARD for the listicle signal's upper boundary. engagement_farm_format fires ~0.9 (it IS a numbered inventory teased into a carousel) but the holistic scores it low, because the items are named and specific rather than stock titles. Decision: the listicle signal is a SLOP signal, not a format filter, so the holistic is allowed to outvote it and this post shows. If it ever starts hiding, the battery has been over-weighted.",
+    "text": "Your reporting week is full of jobs you have already done before.\n\nSo I turned eight of them into reusable assistant workflows.\n\nMorning performance brief. Budget pacing review. Attribution gap check. Creative review. Review mining. Competitor change log. Experiment readout. Next-week planning.\n\nFull breakdown in the carousel."
+  },
+  {
+    "id": "carousel_teaser_generic",
+    "expect": "hide",
+    "note": "The generic shape: numbered inventory of well-known items, promise of delivery in the carousel, save-this framing.",
+    "text": "10 AI tools every marketer needs in 2026 👇\n\nMost people are still using #1 wrong.\n\nSave this post before it disappears. Swipe through for the full list."
+  },
+  {
+    "id": "enumerated_substance",
+    "expect": "show",
+    "note": "BOUNDARY vs engagement_farm_format — it is a list, but every item carries a real specific. Must not fire.",
+    "text": "We cut onboarding from 6 weeks to 2. Three things did it:\n\n1. A named buddy per hire, not a rota — the rota meant nobody owned it.\n2. A written scope for the first sprint, so the hire ships something in week one.\n3. Killing the shadowing week entirely. Nobody could point to anything it taught.\n\nAttrition in the first 90 days went from 4 of 11 to 1 of 14."
+  },
+  {
+    "id": "numbered_argument",
+    "expect": "show",
+    "note": "BOUNDARY — numbered steps in service of an argument, not a shareable inventory.",
+    "text": "The reason your migration keeps stalling is that you are doing it in the wrong order.\n\nFirst make the new path work behind a flag for one tenant. Then dual-write. Then backfill. Then flip reads. Then delete the old path — and only then, because until reads are flipped you have no evidence the new path is correct.\n\nMost teams backfill first and spend a month reconciling drift they created themselves."
+  }
+]

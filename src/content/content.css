@@ -1,0 +1,142 @@
+/* One stylesheet for both feeds.
+   X ships three themes chosen in-app (light / dim / lights-out) and LinkedIn has its own
+   light and dark modes — none of them tied to prefers-color-scheme. So everything here is
+   built from translucent neutrals and `currentColor`, which read correctly on all of them
+   without knowing which is active. */
+
+/* Hide a post's CONTENT while keeping its node, so the "Show" placeholder — which lives
+   inside that node — stays visible.
+   This must not be `display:none` on the node itself. On LinkedIn the card IS the post
+   element (container === article), so hiding the node hid the placeholder with it and
+   posts vanished silently with no way to recover them. On X the two differ, which is why
+   the bug only appeared once the builds were merged. */
+.slopf-hidden > *:not(.slopf-placeholder) {
+  display: none !important;
+}
+
+.slopf-removed {
+  display: none !important;
+}
+
+.slopf-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.3;
+  color: inherit;
+  opacity: 0.6;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.slopf-placeholder span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slopf-placeholder button,
+.slopf-overlay button {
+  flex: none;
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+  background: rgba(128, 128, 128, 0.15);
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 999px;
+}
+
+.slopf-placeholder button:hover,
+.slopf-overlay button:hover {
+  background: rgba(128, 128, 128, 0.3);
+}
+
+/* Collapsed: blur in place, with an overlay to reveal. */
+.slopf-collapsed {
+  position: relative;
+}
+
+.slopf-collapsed > *:not(.slopf-overlay):not(.slopf-badge) {
+  filter: blur(5px);
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+}
+
+.slopf-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  text-align: center;
+  color: inherit;
+  background: rgba(128, 128, 128, 0.08);
+}
+
+.slopf-highlight {
+  box-shadow: inset 3px 0 0 0 rgb(29, 155, 240);
+  background: rgba(29, 155, 240, 0.05);
+}
+
+.slopf-revealed {
+  box-shadow: inset 3px 0 0 0 rgba(128, 128, 128, 0.5);
+}
+
+/* Diagnostics badge. Hover for the full per-signal breakdown. */
+.slopf-badge {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  z-index: 3;
+  padding: 1px 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  line-height: 1.6;
+  color: inherit;
+  cursor: help;
+  background: rgba(128, 128, 128, 0.18);
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 999px;
+  opacity: 0.55;
+}
+
+.slopf-badge:hover {
+  opacity: 1;
+}
+
+.slopf-badge--hide {
+  color: rgb(244, 33, 46);
+  border-color: rgba(244, 33, 46, 0.5);
+}
+
+.slopf-badge--collapse {
+  color: rgb(217, 146, 0);
+  border-color: rgba(217, 146, 0, 0.5);
+}
+
+.slopf-badge--highlight {
+  color: rgb(29, 155, 240);
+  border-color: rgba(29, 155, 240, 0.5);
+}
+
+/* The badge is absolutely positioned; its post needs to be the containing block.
+   X: the article. LinkedIn: the update card, which is both container and content. */
+article[data-testid="tweet"],
+article[role="article"],
+div[role="listitem"][componentkey^="update-card-focus"],
+div[data-urn^="urn:li:activity:"],
+div[data-id^="urn:li:activity:"],
+div.feed-shared-update-v2 {
+  position: relative;
+}

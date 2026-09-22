@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Slop Filter — Interests &amp; settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Slop Filter — Interests &amp; settings</h1>
+      <p class="help">Works on <strong>X</strong> and <strong>LinkedIn</strong>. Interests, excluded topics and the API key are shared; strictness and length limits are set per platform.</p>
+
+      <section>
+        <h2>TypeSafe API key</h2>
+        <p class="help">
+          Get a key at <a href="https://console.typesafe.ai/keys" target="_blank" rel="noreferrer">console.typesafe.ai/keys</a>.
+          It is stored only in this browser profile (<code>chrome.storage.local</code>) and sent only to
+          <code>api.typesafe.ai</code>.
+        </p>
+        <div class="row">
+          <input type="password" id="apiKey" placeholder="ts-…" autocomplete="off" spellcheck="false" />
+          <button type="button" id="toggleKey">Show</button>
+          <button type="button" id="testKey">Test key</button>
+        </div>
+        <div class="row">
+          <label for="model">Model</label>
+          <input type="text" id="model" placeholder="jev-1.13.0" />
+          <span class="help">Pin a version once you are happy with the thresholds; <code>jev-latest</code> moves.</span>
+        </div>
+        <div id="keyStatus" class="status"></div>
+      </section>
+
+      <section>
+        <h2>Interests</h2>
+        <p class="help">
+          One per line, shared across both platforms. Posts substantively about any of these get highlighted (unless
+          they are slop). Be concrete: <em>"agentic AI tooling for developers"</em> works better than <em>"AI"</em>. Max 20.
+        </p>
+        <textarea id="interests" rows="6" placeholder="industrial automation and PLCs&#10;home automation with Node-RED and n8n&#10;small AI decision models"></textarea>
+      </section>
+
+      <section>
+        <h2>Excluded topics</h2>
+        <p class="help">
+          Posts whose main thrust matches any of these are hidden regardless of quality. Describe the thing literally —
+          an attitude works too: <em>"hostility toward AI and automation"</em>, <em>"crypto and token launches"</em>.
+        </p>
+        <textarea id="excludedTopics" rows="4" placeholder="crypto and token launches&#10;culture-war outrage"></textarea>
+      </section>
+
+      <section>
+        <h2>Never filter these accounts</h2>
+        <p class="help">
+          One X handle per line, with or without the <code>@</code>. These posts are never sent to the API and never
+          hidden — useful for friends, and for anyone whose voice trips the "machine-sounding prose" signal.
+          <strong>X only:</strong> LinkedIn's feed markup carries no stable handle to match on.
+        </p>
+        <textarea id="allowHandles" rows="3" placeholder="@someone&#10;@afriend"></textarea>
+      </section>
+
+      <section>
+        <h2>Per platform</h2>
+        <div class="platforms">
+          <div class="platform" id="pf-x">
+            <h3>X</h3>
+            <label><input type="checkbox" id="x-enabled" /> Filter this platform</label>
+            <div class="row">
+              <label for="x-preset">Strictness</label>
+              <select id="x-preset">
+                <option value="relaxed">Relaxed</option>
+                <option value="balanced">Balanced</option>
+                <option value="strict">Strict</option>
+              </select>
+            </div>
+            <div class="row">
+              <label for="x-minPostChars">Minimum length</label>
+              <input type="number" id="x-minPostChars" min="0" max="500" step="5" />
+            </div>
+            <div class="row"><label><input type="checkbox" id="x-skipReplies" /> Skip replies</label></div>
+            <p class="help">X posts are short — a measured timeline had a median of 206 characters and a 10th percentile of 31. Raising the minimum is the cheapest way to cut both false positives and cost.</p>
+          </div>
+
+          <div class="platform" id="pf-linkedin">
+            <h3>LinkedIn</h3>
+            <label><input type="checkbox" id="linkedin-enabled" /> Filter this platform</label>
+            <div class="row">
+              <label for="linkedin-preset">Strictness</label>
+              <select id="linkedin-preset">
+                <option value="relaxed">Relaxed</option>
+                <option value="balanced">Balanced</option>
+                <option value="strict">Strict</option>
+              </select>
+            </div>
+            <div class="row">
+              <label for="linkedin-minPostChars">Minimum length</label>
+              <input type="number" id="linkedin-minPostChars" min="0" max="500" step="5" />
+            </div>
+            <div class="row"><label><input type="checkbox" id="linkedin-skipReplies" /> Skip comments</label></div>
+            <p class="help">LinkedIn posts are long by default, so the minimum sits higher and the battery includes a "no specific content at all" question that X deliberately omits.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Presentation</h2>
+        <div class="row">
+          <label for="hideMode">Hidden posts</label>
+          <select id="hideMode">
+            <option value="placeholder">Collapse to a one-line placeholder with “Show”</option>
+            <option value="remove">Remove from the feed entirely</option>
+          </select>
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="showBadges" /> Show a small “slop %” badge on every evaluated post (hover for the full breakdown)</label>
+        </div>
+        <div class="row">
+          <label for="maxPostChars">Max characters sent per post</label>
+          <input type="number" id="maxPostChars" min="500" max="12000" step="100" />
+        </div>
+      </section>
+
+      <div class="actions">
+        <button type="button" id="save" class="primary">Save</button>
+        <span id="saveStatus" class="status"></span>
+      </div>
+
+      <section class="about">
+        <h2>How it decides</h2>
+        <p>
+          Each post goes to TypeSafe's Jev model in <strong>one request</strong> carrying: a holistic
+          <code>Choice</code> asking simply whether the post is slop, a battery of narrow yes/no questions
+          (engagement bait, machine-generated prose, rage bait, selling, self-promotion, empty wisdom, recycled
+          content, plus platform-specific ones), a graded “substance” score, and one question per interest and
+          excluded topic. Questions are evaluated in parallel against the same post, so adding one costs its own
+          tokens and almost no latency.
+        </p>
+        <p>
+          The holistic Choice leads the score because it separates far better than the battery does — measured on 25
+          labelled posts, a gap of 0.31 against 0.05. The battery stays because it is the only thing that can say
+          <em>which</em> signal fired, which is how every false positive so far has been diagnosed and fixed.
+          Code also computes the counting-based tells itself (thread numbering, emoji bullets, staccato line breaks,
+          hashtag spam), because the model counts badly and a regex counts exactly.
+        </p>
+        <h2>What leaves your browser</h2>
+        <p class="warn">
+          <strong>The text of every evaluated post is sent to <code>api.typesafe.ai</code></strong> — including posts
+          from private connections and members-only groups. Nothing else goes anywhere: no engagement counts, no
+          author names, no browsing history, and there is no server belonging to this extension. Answers are cached in
+          this browser for the session so the same post is not sent twice.
+        </p>
+        <p class="help">
+          Posts are <em>not</em> sent when they are promoted, a reply (if that is enabled), from an allowlisted handle,
+          or shorter than the platform's minimum length. See TypeSafe's own
+          <a href="https://docs.typesafe.ai/legal" target="_blank" rel="noreferrer">terms and data handling</a> for what
+          they do with a request.
+        </p>
+        <p class="help">
+          Roughly 3,000–3,500 input tokens per post, about $0.00014 at current prices — billed to your own TypeSafe
+          key. Moving the strictness slider re-scores cached answers, so it costs nothing.
+        </p>
+      </section>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>
